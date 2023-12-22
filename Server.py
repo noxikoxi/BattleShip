@@ -5,7 +5,7 @@ import threading
 class Client:
     def __init__(self):
         self.name = socket.gethostname()
-        self.serverIp = "192.168.100.10"
+        self.serverIp = socket.gethostbyname(self.name)
         self.serverPort = 5555
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.isConnected = False
