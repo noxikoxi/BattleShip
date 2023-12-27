@@ -15,7 +15,7 @@ class Block(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
         if self.wasShot:
-            pygame.draw.circle(surface, SHOT_CIRCLE_COLOR, self.rect.center, BLOCK_SIZE/3)
+            pygame.draw.circle(surface, SHOT_CIRCLE_COLOR, self.rect.center, BLOCK_SIZE / 3)
 
     def updateColor(self, color):
         self.image.fill(color)

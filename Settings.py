@@ -23,7 +23,7 @@ LETTER_TO_DECIMAL = {}
 
 ALPHABET = ascii_uppercase[:MAP_SIZE]
 
-for i, text in enumerate(ALPHABET):
-    LETTER_TO_DECIMAL[text] = i
+for num, text in enumerate(ALPHABET):
+    LETTER_TO_DECIMAL[text] = num
 
-DECIMAL_TO_LETTER = {value : key for key, value in LETTER_TO_DECIMAL.items()}
+DECIMAL_TO_LETTER = {value: key for key, value in LETTER_TO_DECIMAL.items()}

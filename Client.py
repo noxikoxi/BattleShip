@@ -51,13 +51,13 @@ class Game:
 
     def generateMap(self, offsetX=0.0) -> [[Block]]:
         lineSize = 1
-        temp = [[None for _ in range(MAP_SIZE)] for _ in range(MAP_SIZE)]
+        temp = [[] for _ in range(MAP_SIZE)]
 
         for col in range(MAP_SIZE):
             for row in range(MAP_SIZE):
-                temp[row][col] = Block((col * BLOCK_SIZE + offsetX + lineSize * col,
+                temp[row].append(Block((col * BLOCK_SIZE + offsetX + lineSize * col,
                                         row * BLOCK_SIZE + OFFSET_Y + lineSize * row),
-                                       self.mapSprites)
+                                       self.mapSprites))
 
         return temp
 
@@ -110,7 +110,8 @@ class Game:
         # Turns
         self.screen.blit(
             self.font.render(f'{"YOUR TURN" if self.yourTurn else "OPPONENT TURN"}', True, (255, 255, 255)),
-            (self.map[0][int(MAP_SIZE / 2)].rect.x - self.font.size(f'{"YOUR TURN" if self.yourTurn else "OPPONENT TURN"}')[0] / 2, HEIGHT - 80))
+            (self.map[0][int(MAP_SIZE / 2)].rect.x -
+             self.font.size(f'{"YOUR TURN" if self.yourTurn else "OPPONENT TURN"}')[0] / 2, HEIGHT - 80))
 
         # Player Name
         self.screen.blit(
@@ -127,20 +128,21 @@ class Game:
             self.screen.blit(
                 self.font.render(f'YOU {self.gameOverStatus}', True, TEXT_COLOR),
                 (self.opponentMap[0][int(MAP_SIZE / 2)].rect.x - self.font.size(f'YOU {self.gameOverStatus}')[0] / 2,
-                 HEIGHT-80))
+                 HEIGHT - 80))
         else:  # last enemy move message
             self.screen.blit(
                 self.font.render(f'Opponent move: {self.lastEnemyMove}', True, TEXT_COLOR),
-                (self.opponentMap[0][int(MAP_SIZE / 2)].rect.x - self.font.size(f'Opponent move: {self.lastEnemyMove}')[0] / 2,
+                (self.opponentMap[0][int(MAP_SIZE / 2)].rect.x - self.font.size(f'Opponent move: {self.lastEnemyMove}')[
+                    0] / 2,
                  HEIGHT - 80))
 
-    def mouseOnEnemyBoard(self, pos):
-        return (self.opponentMap[0][0].rect.left < pos[0] < self.opponentMap[0][MAP_SIZE - 1].rect.right and
-                self.opponentMap[0][0].rect.top < pos[1] < self.opponentMap[MAP_SIZE - 1][0].rect.bottom)
+    def mouseOnEnemyBoard(self, position):
+        return (self.opponentMap[0][0].rect.left < position[0] < self.opponentMap[0][MAP_SIZE - 1].rect.right and
+                self.opponentMap[0][0].rect.top < position[1] < self.opponentMap[MAP_SIZE - 1][0].rect.bottom)
 
-    def selectBlock(self, pos):
-        board_x = (pos[0] - OPPONENT_MAP_OFFSET_X - 1) // (BLOCK_SIZE + 1)
-        board_y = (pos[1] - OFFSET_Y - 1) // (BLOCK_SIZE + 1)
+    def selectBlock(self, position):
+        board_x = (position[0] - OPPONENT_MAP_OFFSET_X - 1) // (BLOCK_SIZE + 1)
+        board_y = (position[1] - OFFSET_Y - 1) // (BLOCK_SIZE + 1)
 
         if self.opponentMap[board_y][board_x].canShoot:
             if self.selectedBlock is not None:
@@ -170,7 +172,7 @@ class Game:
         row = int(shoot[0])
         col = LETTER_TO_DECIMAL[shoot[1]]
 
-        self.lastEnemyMove = f'{shoot[1]}{row+1}'
+        self.lastEnemyMove = f'{shoot[1]}{row + 1}'
 
         if self.map[row][col].ship is not None:
             ship = self.map[row][col].ship
