@@ -14,6 +14,7 @@ class Ship(pygame.sprite.Sprite):
         self.size = size
         self.startBlock = startBlock
         self.direction = direction
+        self.shots = 0
         asset_name = "PatrolBoat1.png"
 
         if size == 2:

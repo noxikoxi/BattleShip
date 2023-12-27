@@ -9,6 +9,7 @@ class Player:
         self.shipsGroup = pygame.sprite.Group()
         self.ships = []
         self.name = "Player"
+        self.shipsDestroyed = 0
 
     def randomShipPlacement(self, board):
         # Ship placements starts from the biggest ship
@@ -64,6 +65,6 @@ class Player:
                         self.ships.append(Ship(ship_size, start_pos, direction, self.shipsGroup))
                         for i in range(ship_size):
                             board[start_pos[0] + i if direction == 1 else start_pos[0]][
-                                start_pos[1] + i if direction == 0 else start_pos[1]].hasShip = True
+                                start_pos[1] + i if direction == 0 else start_pos[1]].ship = self.ships[-1]
 
                         ship_placed = True

@@ -1,5 +1,5 @@
+import random
 import socket
-import threading
 
 
 class Client:
@@ -22,10 +22,9 @@ class Client:
     def waitForData(self):
         while True:
             data = self.socket.recv(1024)
-            if not data:
-                raise(ValueError("Nie otrzymano danych z serwera..."))
-            else:
-                print('Otrzymano dane z serwera')
+
+            if data:
+                print(f'Otrzymano dane z serwera: {data.decode()} ')
                 return data.decode()
 
     def sendData(self, data):
@@ -68,42 +67,81 @@ class Server:
         print(f"First player has connected, waiting for second player to connect...")
 
         self.client1Name = self.client1Socket.recv(1024).decode()
-        print(f'First player name: {self.client1Name}')
+        print(f'\nFirst player name: {self.client1Name}')
 
         self.client2Socket, self.client2Address = self.socket.accept()
         print(f"Connected with: {self.client2Address}")
         print(f"Second player has connected.\nStarting the Game.")
 
         self.client2Name = self.client2Socket.recv(1024).decode()
-        print(f'Second player name: {self.client2Name}')
+        print(f'\nSecond player name: {self.client2Name}')
 
         self.sendData(self.client1Socket, self.client2Name)
         self.sendData(self.client2Socket, self.client1Name)
 
     def sendData(self, s, data):
-        # Obsługa komunikacji z klientem
         s.send(data.encode())
 
-    def handleClient(self):
-        pass
+    def handleGame(self):
+        turn = random.random()
+        if turn <= 0.5:
+            self.sendData(self.client1Socket, "TURN")
+            handling_client = 1
+            print(f'Sent "TURN" to: {self.client1Name}')
+        else:
+            self.sendData(self.client2Socket, "TURN")
+            handling_client = 2
+            print(f'Sent "TURN" to: {self.client2Name}')
 
-    # def waitForData(self):
-    #     while True:
-    #         data = self.client_socket.recv(1024)
-    #         if not data:
-    #             break
-    #         else:
-    #             print(f'Otrzymałem dane od klienta')
-    #             return data
+        while True:
+            if handling_client == 1:
+                message = self.client1Socket.recv(1024).decode()
+                print(f'Received {message} from {self.client1Name}')
+
+                self.sendData(self.client2Socket, message)
+
+                if message.split(' ')[0] == "SHOOT":
+                    handling_client = 2
+                elif message.split(' ')[0] == "SHIP":
+                    self.sendData(self.client2Socket, "TURN")
+                    handling_client = 2
+                elif message.split(' ')[0] == 'SHIP_SUNK':
+                    self.sendData(self.client2Socket, "TURN")
+                    handling_client = 2
+                elif message.split(' ')[0] == "WATER":
+                    self.sendData(self.client1Socket, "TURN")
+                    handling_client = 1
+                elif message.split(' ')[0] == "GAME_OVER":
+                    break
+
+            elif handling_client == 2:
+                message = self.client2Socket.recv(1024).decode()
+                print(f'Received {message} from {self.client2Name}')
+
+                self.sendData(self.client1Socket, message)
+
+                if message.split(' ')[0] == "SHOOT":
+                    handling_client = 1
+                elif message.split(' ')[0] == "SHIP":
+                    self.sendData(self.client1Socket, "TURN")
+                    handling_client = 1
+                elif message.split(' ')[0] == 'SHIP_SUNK':
+                    self.sendData(self.client1Socket, "TURN")
+                    handling_client = 1
+                elif message.split(' ')[0] == "WATER":
+                    self.sendData(self.client2Socket, "TURN")
+                    handling_client = 2
+                elif message.split(' ')[0] == "GAME_OVER":
+                    break
 
     def __del__(self):
         self.socket.close()
-        # self.client_socket.close()
+        self.client1Socket.close()
+        self.client2Socket.close()
 
 
 if __name__ == '__main__':
     server = Server()
     server.start_server()
     server.wait_for_clients()
-
-
+    server.handleGame()

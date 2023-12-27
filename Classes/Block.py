@@ -1,14 +1,21 @@
-from Settings import pygame, BLOCK_SIZE, MAP_SIZE, BLOCK_COLOR
+from Settings import pygame, BLOCK_SIZE, MAP_SIZE, BLOCK_COLOR, SHOT_CIRCLE_COLOR
 
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, position, *groups, color=BLOCK_COLOR):
         super().__init__(*groups)
-        self.image = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE))
+        self.image = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE), pygame.SRCALPHA)
         self.image.fill(color)
         self.rect = self.image.get_rect(topleft=position)
         self.canShoot = True
-        self.hasShip = False
+        self.ship = None
+        self.wasShot = False
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+        if self.wasShot:
+            pygame.draw.circle(surface, SHOT_CIRCLE_COLOR, self.rect.center, BLOCK_SIZE/3)
 
     def updateColor(self, color):
         self.image.fill(color)
@@ -32,18 +39,18 @@ class Block(pygame.sprite.Sprite):
         if direction == 0:  # Only blocks on the right
             for i in range(-1, 2):
                 if Block.isOnBoard((position[0] + i, position[1] + 1)):
-                    if board[position[0] + i][position[1] + 1].hasShip:
+                    if board[position[0] + i][position[1] + 1].ship is not None:
                         return False
         elif direction == 1:  # Only blocks on the bottom
             for i in range(-1, 2):
                 if Block.isOnBoard((position[0] + 1, position[1] + i)):
-                    if board[position[0] + 1][position[1] + i].hasShip:
+                    if board[position[0] + 1][position[1] + i].ship is not None:
                         return False
         else:  # Every neighbour block
             for row in range(-1, 2):
                 for col in range(-1, 2):
                     if Block.isOnBoard((position[0] + row, position[1] + col)):
-                        if board[position[0] + row][position[1] + col].hasShip:
+                        if board[position[0] + row][position[1] + col].ship is not None:
                             return False
 
         return True
