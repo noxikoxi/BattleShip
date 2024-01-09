@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk  # themed widgets
 
 
+# A simple popup window, which task is to get name and server ip address
 class Popup:
     def __init__(self):
         self.root = tk.Tk()

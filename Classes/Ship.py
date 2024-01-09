@@ -1,10 +1,11 @@
 from Settings import BLOCK_SIZE, OFFSET_X, OFFSET_Y, pygame
 
 
+# Class representing a ship
 class Ship(pygame.sprite.Sprite):
     def __init__(self, size, startBlock, direction, *groups):
         """
-
+            Ship placement starts on startBlock and goes with specific direction
         :param size: Ship Size
         :param startBlock: Ship Start Block
         :param direction: Ship Direction (0 - horizontal, 1 - vertical)
@@ -14,7 +15,10 @@ class Ship(pygame.sprite.Sprite):
         self.size = size
         self.startBlock = startBlock
         self.direction = direction
+
+        # Number of shots ship took (If equal to size ship is sunk)
         self.shots = 0
+
         asset_name = "PatrolBoat1.png"
 
         if size == 2:

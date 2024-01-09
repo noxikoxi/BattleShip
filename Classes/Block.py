@@ -1,14 +1,19 @@
 from Settings import pygame, BLOCK_SIZE, MAP_SIZE, BLOCK_COLOR, SHOT_CIRCLE_COLOR
 
 
+# A class representing one block on a game board
 class Block(pygame.sprite.Sprite):
     def __init__(self, position, *groups, color=BLOCK_COLOR):
         super().__init__(*groups)
         self.image = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE), pygame.SRCALPHA)
         self.image.fill(color)
         self.rect = self.image.get_rect(topleft=position)
+
+        # If Block can be shot (enemy board)
         self.canShoot = True
+        # If Block has a ship
         self.ship = None
+        # If Block was shot (player board)
         self.wasShot = False
 
     def draw(self, surface):

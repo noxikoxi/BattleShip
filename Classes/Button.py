@@ -1,6 +1,7 @@
 from Settings import pygame, BLOCK_COLOR
 
 
+# A simple button
 class Button:
     def __init__(self, position, text, font):
         self.border_width = 5
@@ -12,6 +13,7 @@ class Button:
         self.image.fill(BLOCK_COLOR)
         self.rect = self.image.get_rect(topleft=(position[0] + self.border_width, position[1] + self.border_width))
 
+        # Text
         self.font = font
         self.text = text
         self.fontColor = (45, 45, 45)

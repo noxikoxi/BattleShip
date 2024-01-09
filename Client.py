@@ -14,23 +14,31 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.font.init()
+
+        # Game windows
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Battleships")
 
+        # Sprite Groups
         self.mapSprites = SpriteGroup()
         self.buttonSprites = pygame.sprite.GroupSingle()
         self.shipBlocks = pygame.sprite.Group()
 
-        # Map[ROW][COL]
+        # Map[ROW][COL] -> first index=ROW, second index=COL
+        # Game boards
         self.map = self.generateMap(OFFSET_X)
         self.opponentMap = self.generateMap(offsetX=OPPONENT_MAP_OFFSET_X)
 
+        # Game clock
         self.clock = pygame.time.Clock()
+
         self.yourTurn = False
         self.selectedBlock = None
         self.selectedBlockPosition = (None, None)
+
         self.gameOver = False
         self.gameOverStatus = None
+
         self.lastEnemyMove = None
 
         self.opponentName = "Waiting for opponent to join..."
@@ -66,7 +74,7 @@ class Game:
 
         border_line_width = 5
 
-        # Border around maps
+        # Border around maps (Just a rectangle a little bigger than a board)
         pygame.draw.rect(self.screen, (0, 0, 0),
                          pygame.Rect((self.map[0][0].rect.left - border_line_width,
                                       self.map[0][0].rect.top - border_line_width),
@@ -79,6 +87,7 @@ class Game:
                                      ((BLOCK_SIZE + 1) * MAP_SIZE + 2 * border_line_width,
                                       (BLOCK_SIZE + 1) * MAP_SIZE + 2 * border_line_width)))
 
+        # Sprite Groups draw
         self.mapSprites.draw(self.screen)
         self.player.shipsGroup.draw(self.screen)
 
@@ -137,10 +146,20 @@ class Game:
                  HEIGHT - 80))
 
     def mouseOnEnemyBoard(self, position):
+        """
+
+        :param position: Mouse position
+        :return: True if position in enemy map, False otherwise
+        """
         return (self.opponentMap[0][0].rect.left < position[0] < self.opponentMap[0][MAP_SIZE - 1].rect.right and
                 self.opponentMap[0][0].rect.top < position[1] < self.opponentMap[MAP_SIZE - 1][0].rect.bottom)
 
     def selectBlock(self, position):
+        """
+            Select block on enemy board
+        :param position: Mouse position
+        :return: None
+        """
         board_x = (position[0] - OPPONENT_MAP_OFFSET_X - 1) // (BLOCK_SIZE + 1)
         board_y = (position[1] - OFFSET_Y - 1) // (BLOCK_SIZE + 1)
 
@@ -153,6 +172,11 @@ class Game:
             self.selectedBlock.updateColor(SELECTED_BLOCK_COLOR)
 
     def getNameAndIp(self, popup):
+        """
+            Sets player name and server ip from popup
+        :param popup: popup window
+        :return: None
+        """
         self.player.name = popup.name.get()
         if popup.ip.get() != "":
             self.lan.updateIp(popup.ip.get())
@@ -168,6 +192,11 @@ class Game:
         self.opponentName = self.lan.waitForData()
 
     def handleShot(self, shoot):
+        """
+            Applies enemy shot on player map and sends feedback to the server
+        :param shoot: enemy shot
+        :return: None
+        """
         shoot = shoot.split(':')
         row = int(shoot[0])
         col = LETTER_TO_DECIMAL[shoot[1]]
@@ -189,6 +218,13 @@ class Game:
             self.lan.sendData(f'WATER {row}:{DECIMAL_TO_LETTER[col]}')
 
     def applyShotOnEnemyBoard(self, position, ship=False, sunk=False):
+        """
+            Applies player shot on enemy board
+        :param position: position on enemy board (ROW, COL)
+        :param ship: True if a ship was hit
+        :param sunk: True if a ship was sunk
+        :return: None
+        """
         position = position.split(':')
 
         if sunk:  # Different message
@@ -241,12 +277,18 @@ class Game:
 
 if __name__ == '__main__':
     game = Game()
+
+    # Draw so game is visible during player name input
     game.draw()
     pygame.display.update()
+
     game.createPopup()
 
     game.lan.connect_with_server()
+
+    # Send player name to the server
     game.lan.sendData(game.player.name)
+
     threading.Thread(daemon=True, target=game.receiveOpponentName).start()
     threading.Thread(daemon=True, target=game.handleLanGame).start()
 
@@ -268,8 +310,10 @@ if __name__ == '__main__':
                 game.shootButton.hover(pos)
 
                 if game.shootButton.rect.collidepoint(pos) and pygame.mouse.get_pressed()[0]:
+                    # Sent shoot message to the server
                     game.lan.sendData(
                         f'SHOOT {game.selectedBlockPosition[0]}:{DECIMAL_TO_LETTER[game.selectedBlockPosition[1]]}')
+
                     game.yourTurn = False
                     game.selectedBlock.updateColor(BLOCK_COLOR)
                     game.selectedBlock.canShoot = False
