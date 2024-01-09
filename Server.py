@@ -22,7 +22,6 @@ class Client:
     def waitForData(self):
         while True:
             data = self.socket.recv(1024)
-
             if data:
                 print(f'Otrzymano dane z serwera: {data.decode()} ')
                 return data.decode()
