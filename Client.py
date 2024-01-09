@@ -1,6 +1,8 @@
 import sys
 import threading
 
+import pygame
+
 from Settings import *
 from Server import Client
 from Classes.Popup import Popup
@@ -273,6 +275,9 @@ class Game:
             elif message.split(" ")[0] == "GAME_OVER":
                 self.gameOver = True
                 self.gameOverStatus = 'LOST'
+            elif message.split(" ")[0] == "ERROR":
+                print("\nError encountered; closing the game.")
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
 
 
 if __name__ == '__main__':

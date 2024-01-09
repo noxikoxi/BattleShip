@@ -95,6 +95,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
     - *GAME_OVER*
     - *TURN*
     - *READY*
+    - *ERROR*
 - **SHOOT** oznacza strzał, jego składnia: *SHOOT [wiersz]:[kolumna]*
 - **SHIP** oznacza trafienie w statek: *SHIP [wiersz]:[kolumna]*
 - **WATER** oznacza trafieni w wodę: *WATER [wiersz]:[kolumna]*
@@ -103,6 +104,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
 - **GAME_OVER** oznacza koniec gry, gracz, który otrzymał ten komunikat od serwera, przegrywa. Składnia: *GAME_OVER*
 - **TURN** oznacza przekazanie tury, gracz, który go otrzymał, może wykonać ruch, Składnia: *TURN*
 - **READY** sygnalizuje, że gracz otrzymał i przetworzył nazwę przeciwnika oraz jest gotowy do rozpoczęcia gry
+- **ERROR** sygnalizuje, że serwer napotkał błąd i zamyka połączenie, jednocześnie zamyka gry klientów
 
 #### Uwagi
 - wiersz w komunikatach jest realnym indeksem mapy, dlatego jest zawsze mniejszy o 1. (mapa jest indeksowana od 0, ale wyświetlane etykiety zaczynają się od 1).

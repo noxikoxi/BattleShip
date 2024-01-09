@@ -36,8 +36,7 @@ class Client:
 class Server:
     def __init__(self):
         self.name = socket.gethostname()
-        # self.ip = socket.gethostbyname(self.name)
-        self.ip = "127.0.0.1"
+        self.ip = socket.gethostbyname(self.name)
         self.port = 5555
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -88,7 +87,9 @@ class Server:
         mess2 = self.client2Socket.recv(1024).decode()
 
         if mess1 != "READY" or mess2 != "READY":
-            print("Communication error.\nTry launching the game again.")
+            print("\nCommunication error.\nTry launching the game again.")
+            self.sendData(self.client1Socket, "ERROR")
+            self.sendData(self.client2Socket, "ERROR")
             return
         print("Both players are ready.\nStarting the game.")
 
