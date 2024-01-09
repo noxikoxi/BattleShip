@@ -36,7 +36,8 @@ class Client:
 class Server:
     def __init__(self):
         self.name = socket.gethostname()
-        self.ip = socket.gethostbyname(self.name)
+        # self.ip = socket.gethostbyname(self.name)
+        self.ip = "127.0.0.1"
         self.port = 5555
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -70,7 +71,7 @@ class Server:
 
         self.client2Socket, self.client2Address = self.socket.accept()
         print(f"Connected with: {self.client2Address}")
-        print(f"Second player has connected.\nStarting the Game.")
+        print(f"Second player has connected.")
 
         self.client2Name = self.client2Socket.recv(1024).decode()
         print(f'\nSecond player name: {self.client2Name}')
@@ -79,9 +80,18 @@ class Server:
         self.sendData(self.client2Socket, self.client1Name)
 
     def sendData(self, s, data):
-        s.send(data.encode())
+        s.send(data.encode(), )
 
     def handleGame(self):
+
+        mess1 = self.client1Socket.recv(1024).decode()
+        mess2 = self.client2Socket.recv(1024).decode()
+
+        if mess1 != "READY" or mess2 != "READY":
+            print("Communication error.\nTry launching the game again.")
+            return
+        print("Both players are ready.\nStarting the game.")
+
         turn = random.random()
         if turn <= 0.5:
             self.sendData(self.client1Socket, "TURN")

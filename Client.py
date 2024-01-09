@@ -190,6 +190,7 @@ class Game:
 
     def receiveOpponentName(self):
         self.opponentName = self.lan.waitForData()
+        self.lan.sendData("READY")
 
     def handleShot(self, shoot):
         """
@@ -266,7 +267,6 @@ class Game:
             elif message.split(" ")[0] == "SHIP":
                 self.applyShotOnEnemyBoard(message.split(" ")[1], True)
             elif message.split(" ")[0] == 'SHIP_SUNK':
-                print(message.split(" "))
                 self.applyShotOnEnemyBoard(message.split(" ")[1], True, True)
             elif message.split(" ")[0] == "WATER":
                 self.applyShotOnEnemyBoard(message.split(" ")[1], False)
@@ -289,7 +289,10 @@ if __name__ == '__main__':
     # Send player name to the server
     game.lan.sendData(game.player.name)
 
-    threading.Thread(daemon=True, target=game.receiveOpponentName).start()
+    getNameThread = threading.Thread(daemon=True, target=game.receiveOpponentName)
+    getNameThread.start()  # Thread starts
+    getNameThread.join()  # Waiting for thread to finish
+
     threading.Thread(daemon=True, target=game.handleLanGame).start()
 
     # GAME LOOP

@@ -5,9 +5,9 @@
 ---
 
 ## How to start the game:
-- Run Server.py (python server.py).
+- Run Server.py (python Server.py).
 - Run Client.py twice (for each player).
-- If you want to play on one PC you may leave IP filed as blank, it will take your PC IP, otherwise type IP of the computer running server.py
+- If you want to play on one PC you may leave IP filed as blank, it will take your PC IP, otherwise type IP of the computer running Server.py
 
 ---
 
@@ -94,6 +94,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
     - *SHIP_SUNK*
     - *GAME_OVER*
     - *TURN*
+    - *READY*
 - **SHOOT** oznacza strzał, jego składnia: *SHOOT [wiersz]:[kolumna]*
 - **SHIP** oznacza trafienie w statek: *SHIP [wiersz]:[kolumna]*
 - **WATER** oznacza trafieni w wodę: *WATER [wiersz]:[kolumna]*
@@ -101,6 +102,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
 *SHIP_SUNK [wiersz początku statku],[kolumna początku statku]:[kierunek statki]:[długość statku]*
 - **GAME_OVER** oznacza koniec gry, gracz, który otrzymał ten komunikat od serwera, przegrywa. Składnia: *GAME_OVER*
 - **TURN** oznacza przekazanie tury, gracz, który go otrzymał, może wykonać ruch, Składnia: *TURN*
+- **READY** sygnalizuje, że gracz otrzymał i przetworzył nazwę przeciwnika oraz jest gotowy do rozpoczęcia gry
 
 #### Uwagi
 - wiersz w komunikatach jest realnym indeksem mapy, dlatego jest zawsze mniejszy o 1. (mapa jest indeksowana od 0, ale wyświetlane etykiety zaczynają się od 1).
