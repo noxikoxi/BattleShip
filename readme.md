@@ -33,6 +33,7 @@
 
 ## Jak grać?
 - Po uruchomieniu gry należy wpisać swoją nazwę oraz adres ip serwera.
+- Jeżeli klient jest uruchomiony na tym samym komputerze co serwer, można zostawić pole z adresem ip puste, zostanie pobrany z systemu.
 - Okno gry zawiera dwie plansze: gracza oraz przeciwnika
 - Na planszy gracza widoczne są wszystkie jego statki.
 - Na planszy przeciwnika na początku są same nieznane bloki, 
