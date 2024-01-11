@@ -1,5 +1,6 @@
 import random
 import socket
+import sys
 
 
 class Client:
@@ -19,15 +20,27 @@ class Client:
         print(f'Connected with server: {self.serverIp}:{self.serverPort}')
         self.isConnected = True
 
-    def waitForData(self):
-        while True:
+    def waitForData(self, callback_if_error):
+        try:
             data = self.socket.recv(1024)
-            if data:
+
+            if not data:
+                print('\033[93m' + "Message error: Lost connection with server..." + '\033[0m')
+                callback_if_error()
+            else:
                 print(f'Otrzymano dane z serwera: {data.decode()} ')
                 return data.decode()
 
-    def sendData(self, data):
-        self.socket.send(data.encode())
+        except ConnectionResetError:
+            print('\033[93m' + "Message error: Lost connection with server..." + '\033[0m')
+            callback_if_error()
+
+    def sendData(self, data, callback_if_error):
+        try:
+            self.socket.send(data.encode())
+        except ConnectionResetError:
+            print('\033[93m' + 'Error: Lost connection with server...' + '\033[0m')
+            callback_if_error()
 
     def __del__(self):
         self.socket.close()
@@ -65,26 +78,45 @@ class Server:
         print(f"Connected with: {self.client1Address}")
         print(f"First player has connected, waiting for second player to connect...")
 
-        self.client1Name = self.client1Socket.recv(1024).decode()
+        self.client1Name = self.getData(self.client1Socket)
         print(f'\nFirst player name: {self.client1Name}')
 
         self.client2Socket, self.client2Address = self.socket.accept()
         print(f"Connected with: {self.client2Address}")
         print(f"Second player has connected.")
 
-        self.client2Name = self.client2Socket.recv(1024).decode()
+        self.client2Name = self.getData(self.client2Socket)
         print(f'\nSecond player name: {self.client2Name}')
 
         self.sendData(self.client1Socket, self.client2Name)
         self.sendData(self.client2Socket, self.client1Name)
 
-    def sendData(self, s, data):
-        s.send(data.encode(), )
+    def getData(self, data_socket):
+        try:
+            message = data_socket.recv(1024)
+            if not message:
+                print('\033[93m' + "Message error: Lost connection with one of the players.\nClosing Server..." + f'\nPlayer peer name was {data_socket.getpeername()}' + '\033[0m')
+                sys.exit()
+        except socket.timeout:
+            print('\033[93m' + 'Error: Waiting time exceeded.' + '\033[0m')
+            sys.exit()
+        except ConnectionResetError:
+            print('\033[93m' + 'Error: Lost connection with one of the players.\nClosing Server...' + f'\nPlayer peer name was {data_socket.getpeername()}' + '\033[0m')
+            sys.exit()
+
+        return message.decode()
+
+    def sendData(self, data_socket, data):
+        try:
+            data_socket.send(data.encode())
+        except ConnectionResetError:
+            print('\033[93m' + 'Error: Lost connection with one of the players.\nClosing Server...' + f'\nPlayer peer name was {data_socket.getpeername()}' + '\033[0m')
+            sys.exit()
 
     def handleGame(self):
 
-        mess1 = self.client1Socket.recv(1024).decode()
-        mess2 = self.client2Socket.recv(1024).decode()
+        mess1 = self.getData(self.client1Socket)
+        mess2 = self.getData(self.client2Socket)
 
         if mess1 != "READY" or mess2 != "READY":
             print("\nCommunication error.\nTry launching the game again.")
@@ -105,7 +137,9 @@ class Server:
 
         while True:
             if handling_client == 1:
-                message = self.client1Socket.recv(1024).decode()
+
+                message = self.getData(self.client1Socket)
+
                 print(f'Received {message} from {self.client1Name}')
 
                 self.sendData(self.client2Socket, message)
@@ -113,19 +147,18 @@ class Server:
                 if message.split(' ')[0] == "SHOOT":
                     handling_client = 2
                 elif message.split(' ')[0] == "SHIP":
-                    self.sendData(self.client2Socket, "TURN")
                     handling_client = 2
                 elif message.split(' ')[0] == 'SHIP_SUNK':
-                    self.sendData(self.client2Socket, "TURN")
                     handling_client = 2
                 elif message.split(' ')[0] == "WATER":
-                    self.sendData(self.client1Socket, "TURN")
                     handling_client = 1
                 elif message.split(' ')[0] == "GAME_OVER":
                     break
 
             elif handling_client == 2:
-                message = self.client2Socket.recv(1024).decode()
+
+                message = self.getData(self.client2Socket)
+
                 print(f'Received {message} from {self.client2Name}')
 
                 self.sendData(self.client1Socket, message)
@@ -133,13 +166,10 @@ class Server:
                 if message.split(' ')[0] == "SHOOT":
                     handling_client = 1
                 elif message.split(' ')[0] == "SHIP":
-                    self.sendData(self.client1Socket, "TURN")
                     handling_client = 1
                 elif message.split(' ')[0] == 'SHIP_SUNK':
-                    self.sendData(self.client1Socket, "TURN")
                     handling_client = 1
                 elif message.split(' ')[0] == "WATER":
-                    self.sendData(self.client2Socket, "TURN")
                     handling_client = 2
                 elif message.split(' ')[0] == "GAME_OVER":
                     break

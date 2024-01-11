@@ -1,8 +1,6 @@
 import sys
 import threading
 
-import pygame
-
 from Settings import *
 from Server import Client
 from Classes.Popup import Popup
@@ -57,7 +55,7 @@ class Game:
         self.player.randomShipPlacement(self.map)
 
         # Buttons
-        self.shootButton = Button((WIDTH / 2 - 40, HEIGHT - 120), "Shoot", self.font)
+        self.shootButton = Button((WIDTH // 2 - 40, HEIGHT - 120), "Shoot", self.font)
 
     def generateMap(self, offsetX=0.0) -> [[Block]]:
         lineSize = 1
@@ -103,19 +101,19 @@ class Game:
         for i in range(1, MAP_SIZE + 1):
             # Board
             self.screen.blit(self.font.render(f'{i}', True, TEXT_COLOR),
-                             (10, 50 + int((i - 0.5) * (BLOCK_SIZE + 1)) - self.font.size(str(i))[1] / 2))
+                             (10, 50 + int((i - 0.5) * (BLOCK_SIZE + 1)) - self.font.size(str(i))[1] // 2))
 
             self.screen.blit(self.font.render(f'{ALPHABET[i - 1]}', True, TEXT_COLOR),
-                             (50 + (i - 0.5) * (BLOCK_SIZE + 1) - self.font.size(ALPHABET[i - 1])[0] / 2, 20))
+                             (50 + int((i - 0.5) * (BLOCK_SIZE + 1)) - self.font.size(ALPHABET[i - 1])[0] // 2, 20))
 
             # Opponent Board
             self.screen.blit(self.font.render(f'{i}', True, TEXT_COLOR),
                              (OPPONENT_MAP_OFFSET_X - 40,
-                              50 + int((i - 0.5) * (BLOCK_SIZE + 1)) - self.font.size("1")[1] / 2))
+                              50 + int((i - 0.5) * (BLOCK_SIZE + 1)) - self.font.size("1")[1] // 2))
 
             self.screen.blit(self.font.render(f'{ALPHABET[i - 1]}', True, TEXT_COLOR),
-                             (WIDTH - (BLOCK_SIZE + 1) * MAP_SIZE - 5 + (i - 0.5) * (BLOCK_SIZE + 1) -
-                              self.font.size(ALPHABET[i - 1])[0] / 2, 20))
+                             (WIDTH - (BLOCK_SIZE + 1) * MAP_SIZE - 5 + int((i - 0.5) * (BLOCK_SIZE + 1)) -
+                              self.font.size(ALPHABET[i - 1])[0] // 2, 20))
 
         # Text
         # Turns
@@ -190,9 +188,14 @@ class Game:
         popup.updateButtonCommand(lambda: self.getNameAndIp(popup))
         popup.run()
 
+    def errorMessage(self):
+        print('\033[93m' + "Closing the game..." + '\033[0m')
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+        sys.exit()  # For thread
+
     def receiveOpponentName(self):
-        self.opponentName = self.lan.waitForData()
-        self.lan.sendData("READY")
+        self.opponentName = self.lan.waitForData(self.errorMessage)
+        self.lan.sendData("READY", self.errorMessage)
 
     def handleShot(self, shoot):
         """
@@ -213,12 +216,13 @@ class Game:
             self.shipBlocks.add(Block(position=self.map[row][col].rect.topleft, color=(255, 0, 0, 100)))
 
             if ship.shots == ship.size:
-                self.lan.sendData(f"SHIP_SUNK {ship.startBlock[0]},{ship.startBlock[1]}:{ship.direction}:{ship.size}")
+                self.lan.sendData(f"SHIP_SUNK {ship.startBlock[0]},{ship.startBlock[1]}:{ship.direction}:{ship.size}", self.errorMessage)
             else:
-                self.lan.sendData(f'SHIP {row}:{DECIMAL_TO_LETTER[col]}')
+                self.lan.sendData(f'SHIP {row}:{DECIMAL_TO_LETTER[col]}', self.errorMessage)
         else:
             self.map[row][col].wasShot = True
-            self.lan.sendData(f'WATER {row}:{DECIMAL_TO_LETTER[col]}')
+            self.lan.sendData(f'WATER {row}:{DECIMAL_TO_LETTER[col]}', self.errorMessage)
+            self.yourTurn = True
 
     def applyShotOnEnemyBoard(self, position, ship=False, sunk=False):
         """
@@ -246,7 +250,7 @@ class Game:
             self.player.shipsDestroyed += 1
 
             if self.player.shipsDestroyed == len(self.player.ships):
-                self.lan.sendData(f'GAME_OVER')
+                self.lan.sendData(f'GAME_OVER', self.errorMessage)
                 self.gameOver = True
                 self.gameOverStatus = 'WON'
         else:
@@ -260,23 +264,25 @@ class Game:
 
     def handleLanGame(self):
         while not self.gameOver:
-            message = self.lan.waitForData()
+            message = self.lan.waitForData(self.errorMessage)
 
-            if message == "TURN":
-                self.yourTurn = True
-            elif message.split(" ")[0] == "SHOOT":
+            if message.split(" ")[0] == "SHOOT":
                 self.handleShot(message.split(" ")[1])
             elif message.split(" ")[0] == "SHIP":
                 self.applyShotOnEnemyBoard(message.split(" ")[1], True)
+                self.yourTurn = True
             elif message.split(" ")[0] == 'SHIP_SUNK':
                 self.applyShotOnEnemyBoard(message.split(" ")[1], True, True)
+                self.yourTurn = True
             elif message.split(" ")[0] == "WATER":
                 self.applyShotOnEnemyBoard(message.split(" ")[1], False)
             elif message.split(" ")[0] == "GAME_OVER":
                 self.gameOver = True
                 self.gameOverStatus = 'LOST'
+            elif message == "TURN":
+                self.yourTurn = True
             elif message.split(" ")[0] == "ERROR":
-                print("\nError encountered; closing the game.")
+                print('\033[93m' + "\nError encountered; closing the game." + '\033[0m')
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
 
 
@@ -292,7 +298,7 @@ if __name__ == '__main__':
     game.lan.connect_with_server()
 
     # Send player name to the server
-    game.lan.sendData(game.player.name)
+    game.lan.sendData(game.player.name, game.errorMessage)
 
     getNameThread = threading.Thread(daemon=True, target=game.receiveOpponentName)
     getNameThread.start()  # Thread starts
@@ -320,7 +326,7 @@ if __name__ == '__main__':
                 if game.shootButton.rect.collidepoint(pos) and pygame.mouse.get_pressed()[0]:
                     # Sent shoot message to the server
                     game.lan.sendData(
-                        f'SHOOT {game.selectedBlockPosition[0]}:{DECIMAL_TO_LETTER[game.selectedBlockPosition[1]]}')
+                        f'SHOOT {game.selectedBlockPosition[0]}:{DECIMAL_TO_LETTER[game.selectedBlockPosition[1]]}', game.errorMessage)
 
                     game.yourTurn = False
                     game.selectedBlock.updateColor(BLOCK_COLOR)
