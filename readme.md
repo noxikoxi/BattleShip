@@ -47,6 +47,7 @@ Następnie, aby wykonać ruch, należy nacisnąć przycisk "Shoot" na dole okna.
 - Pomarańczowe koło na naszej planszy oznacza, że przeciwnik strzelił w wodę.
 - Zaczerwieniony blok zawierający statek na planszy gracza oznacza strzał przeciwnika w statek.
 - Po zakończeniu gry serwer automatycznie się zamyka, gracz może zamknąć okienko poprzez klawisz *q*.
+- Jeżeli nastąpi jakiś problem z połączeniem, gra zostanie zamknięta.
 
 
 ---
@@ -83,7 +84,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
 - Indeksowanie planszy gracza i przeciwnika odbywa się w kolejności [wiersz] [kolumna].
 - O końcu gry decyduje klient (gracz), jeżeli licznik zatopionych statków gracza jest równy całkowitej liczbie statków,
     wysyła on komunikat *GAME_OVER* do serwera, który przesyła go do drugiego gracza. Gracz, który otrzymał *GAME_OVER* z serwera, przegrywa.
-- W konsoli serwera wyświetlane są komunikaty o otrzymanych wiadomościach od graczy oraz wysłanych komunikatów *TURN*.
+- W konsoli serwera wyświetlane są komunikaty o otrzymanych wiadomościach od graczy oraz wysłanym komunikacie *TURN*.
 - W konsoli klienta pokazywane są komunikaty jakie odebrał od serwera.
 
 ### Komunikacja Klient-Serwer
@@ -102,7 +103,7 @@ Implementacja zawiera klasy: Block, Button, Player, Popup, Ship, SpriteGroup, Se
 - **SHIP_SUNK** oznacza, że trafiony jest statek i został zatopiony: 
 *SHIP_SUNK [wiersz początku statku],[kolumna początku statku]:[kierunek statki]:[długość statku]*
 - **GAME_OVER** oznacza koniec gry, gracz, który otrzymał ten komunikat od serwera, przegrywa. Składnia: *GAME_OVER*
-- **TURN** oznacza przekazanie tury, gracz, który go otrzymał, może wykonać ruch, Składnia: *TURN*
+- **TURN** gracz, który otrzymał TURN zaczyna grę, Składnia: *TURN*
 - **READY** sygnalizuje, że gracz otrzymał i przetworzył nazwę przeciwnika oraz jest gotowy do rozpoczęcia gry
 - **ERROR** sygnalizuje, że serwer napotkał błąd i zamyka połączenie, jednocześnie zamyka gry klientów
 
